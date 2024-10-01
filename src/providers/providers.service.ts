@@ -1,26 +1,36 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Provider } from './entities/provider.entity';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 
 @Injectable()
-export class ProvidersService {
-  create(createProviderDto: CreateProviderDto) {
-    return 'This action adds a new provider';
+export class ProviderService {
+  constructor(
+    @InjectRepository(Provider)
+    private providerRepository: Repository<Provider>,
+  ) {}
+
+  create(createProviderDto: CreateProviderDto): Promise<Provider> {
+    const provider = this.providerRepository.create(createProviderDto);
+    return this.providerRepository.save(provider);
   }
 
-  findAll() {
-    return `This action returns all providers`;
+  findAll(): Promise<Provider[]> {
+    return this.providerRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} provider`;
+  findOne(id: number): Promise<Provider> {
+    return this.providerRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateProviderDto: UpdateProviderDto) {
-    return `This action updates a #${id} provider`;
+  async update(id: number, updateProviderDto: UpdateProviderDto): Promise<Provider> {
+    await this.providerRepository.update(id, updateProviderDto);
+    return this.findOne(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} provider`;
+  async remove(id: number): Promise<void> {
+    await this.providerRepository.delete(id);
   }
 }
